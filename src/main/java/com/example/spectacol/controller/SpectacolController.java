@@ -1,6 +1,7 @@
 package com.example.spectacol.controller;
 
 import com.example.spectacol.dto.CreateSpectacolRequest;
+import com.example.spectacol.dto.UpdateSpectacolRequest;
 import com.example.spectacol.model.Spectacol;
 import com.example.spectacol.service.SpectacolService;
 import jakarta.validation.Valid;
@@ -34,4 +35,24 @@ public class SpectacolController {
                 spectacolService.getAllSpectacole()
         );
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Spectacol> getSpectacolById(@PathVariable Long id) {
+        return ResponseEntity.ok(spectacolService.getSpectacolById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Spectacol> updateSpectacol(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSpectacolRequest request) {
+        return ResponseEntity.ok(spectacolService.updateSpectacol(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSpectacol(@PathVariable Long id) {
+        spectacolService.deleteSpectacol(id);
+        return ResponseEntity.noContent().build();
+    }
 }
+
+

@@ -33,12 +33,27 @@ public class RezervareController {
         return ResponseEntity.ok(rezervare);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Rezervare>> getAllReservations() {
+        return ResponseEntity.ok(rezervareService.getAllReservations());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Rezervare> getReservationById(@PathVariable Long id) {
+        return ResponseEntity.ok(rezervareService.getReservationById(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelReservation(@PathVariable Long id) {
-
         rezervareService.cancelReservation(id);
-
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/seats")
+    public ResponseEntity<Rezervare> updateReservationSeats(
+            @PathVariable Long id,
+            @RequestBody List<Long> newLocIds) {
+        return ResponseEntity.ok(rezervareService.updateReservationSeats(id, newLocIds));
     }
 
     @GetMapping("/spectacol/{spectacolId}/locuri-disponibile")
@@ -51,3 +66,5 @@ public class RezervareController {
     }
 
 }
+
+
