@@ -1,2 +1,18 @@
+# IntelliJ IDEA
 .idea/
 *.iml
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Spring Boot
+application-local.properties
+application-local.yml
