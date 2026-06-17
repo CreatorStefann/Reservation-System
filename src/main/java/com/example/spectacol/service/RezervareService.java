@@ -48,7 +48,7 @@ public class RezervareService {
             throw new RuntimeException("One or more seats not found");
         }
 
-        // todo() verificare disponib locuri
+        // verificare disponib locuri
         for (Long locId : locIds) {
             List<RezervareLoc> rezervariExistente =
                     rezervareLocRepository.findByLocId(locId);
@@ -86,14 +86,20 @@ public class RezervareService {
         return savedRezervare;
     }
 
+    public List<Rezervare> getAllReservations() {
+        return rezervareRepository.findAll();
+    }
+
+    public Rezervare getReservationById(Long id) {
+        return rezervareRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+    }
+
     @Transactional
     public void cancelReservation(Long rezervareId) {
 
-        Rezervare rezervare = rezervareRepository.findById(rezervareId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found"));
-
+        Rezervare rezervare = getReservationById(rezervareId);
         rezervare.setStatus(ReservationStatus.CANCELED);
-
         rezervareRepository.save(rezervare);
     }
 
@@ -125,4 +131,54 @@ public class RezervareService {
                 .toList();
     }
 
+    @Transactional
+    public Rezervare updateReservationSeats(Long rezervareId, List<Long> newLocIds) {
+        Rezervare rezervare = getReservationById(rezervareId);
+
+        if (rezervare.getStatus() != ReservationStatus.ACTIVE) {
+            throw new RuntimeException("Cannot update a canceled reservation");
+        }
+
+        // Remove old seats
+        List<RezervareLoc> existingSeats = new ArrayList<>(rezervare.getRezervareLocuri());
+        for (RezervareLoc rl : existingSeats) {
+            rezervareLocRepository.delete(rl);
+        }
+
+        // Validate new seats
+        List<Loc> newLocuri = locRepository.findAllById(newLocIds);
+        if (newLocuri.size() != newLocIds.size()) {
+            throw new RuntimeException("One or more seats not found");
+        }
+
+        // Check availability of new seats
+        for (Long locId : newLocIds) {
+            List<RezervareLoc> rezervariExistente = rezervareLocRepository.findByLocId(locId);
+
+            for (RezervareLoc rl : rezervariExistente) {
+                if (rl.getRezervare().getSpectacol().getId().equals(rezervare.getSpectacol().getId())
+                        && rl.getRezervare().getStatus() == ReservationStatus.ACTIVE
+                        && !rl.getRezervare().getId().equals(rezervareId)) {
+                    throw new RuntimeException("One or more seats are already reserved");
+                }
+            }
+        }
+
+        // Update total price
+        Double newTotalPrice = rezervare.getSpectacol().getPrice() * newLocIds.size();
+        rezervare.setTotalPrice(newTotalPrice);
+
+        // Add new seats
+        List<RezervareLoc> novaRezervaraLocuri = new ArrayList<>();
+        for (Loc loc : newLocuri) {
+            RezervareLoc rezervareLoc = new RezervareLoc();
+            rezervareLoc.setRezervare(rezervare);
+            rezervareLoc.setLoc(loc);
+            novaRezervaraLocuri.add(rezervareLoc);
+        }
+
+        rezervareLocRepository.saveAll(novaRezervaraLocuri);
+        return rezervareRepository.save(rezervare);
+    }
 }
+

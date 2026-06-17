@@ -1,6 +1,7 @@
 package com.example.spectacol.service;
 
 import com.example.spectacol.dto.CreateSalaRequest;
+import com.example.spectacol.dto.UpdateSalaRequest;
 import com.example.spectacol.model.Loc;
 import com.example.spectacol.model.Sala;
 import com.example.spectacol.repository.LocRepository;
@@ -50,4 +51,26 @@ public class SalaService {
 
         return savedSala;
     }
+
+    public List<Sala> getAllSali() {
+        return salaRepository.findAll();
+    }
+
+    public Sala getSalaById(Long id) {
+        return salaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sala not found"));
+    }
+
+    public Sala updateSala(Long id, UpdateSalaRequest request) {
+        Sala sala = getSalaById(id);
+        sala.setName(request.getName());
+        sala.setCapacity(request.getCapacity());
+        return salaRepository.save(sala);
+    }
+
+    public void deleteSala(Long id) {
+        Sala sala = getSalaById(id);
+        salaRepository.delete(sala);
+    }
 }
+
